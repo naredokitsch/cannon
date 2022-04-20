@@ -1,48 +1,36 @@
-
 #include <iostream>
-#include "Main.h"
 #include <vector>
+#define GEOM 0
+#define TEXT 1
+#define NORM 2
 
 using namespace std;
 
 class figura3D {
 
 	vector< vector<float> > coords;
-	//float c[][3];  //Coordenadas de la nube de puntos del mueble
-	// float* n;  //Vectores Normales
-	// float* x;  //Vertices de Textura
-
+	vector< vector<float> > norms;
+	vector< vector<float> > text;
 	vector<vector<vector<int> > > quads;
 	vector<vector<vector<int> > > trng;
+	vector<vector<vector<int> > > poly;
 
 	public:
-		figura3D(vector<vector<float> > c) {
-			coords = c;
-		}
-
-		figura3D(vector<vector<float> > c, vector<vector<vector<int> > > q, vector<vector<vector<int> > > t) {
+		figura3D(vector<vector<float> > c,
+				vector<vector<vector<int> > > q,
+				vector<vector<vector<int> > > t,
+				vector<vector<vector<int> > > p,
+				vector<vector<float> > n,
+				vector<vector<float> > x) {
 			coords = c;
 			quads = q;
 			trng = t;
+			poly = p;
+			norms = n;
+			text = x;
 		}
 
-		// figura3D(float* coordenadas, int* quadrilateral, int* triangles, float* normals) {
-		// 	c = coordenadas;
-		// 	q = quadrilateral;
-		// 	t = triangles;
-		// 	n = normals;
-		// }
-
-		// figura3D(float* coordenadas, int* quadrilateral, int* triangles, float* normals, float* v_textura) {
-		// 	c = coordenadas;
-		// 	q = quadrilateral;
-		// 	t = triangles;
-		// 	n = normals;
-		// 	x = v_textura;
-		// }
-
-		void pointsCloud () {
-			//c.push_back(vector<float> {0, 0, 0});
+		void pointsCloud() {
 			glColor3f(1.0f,0.0f,0.0f);
 			glPointSize(5);  
 			glBegin(GL_POINTS);
@@ -52,12 +40,12 @@ class figura3D {
 			glEnd();
 		}
 
-		void mesh () {
-			glColor3f(0.0f,1.0f,0.0f);
+		void mesh() {
+			glColor3f(0.0f,1.0f,1.0f);
 			for (vector<vector<int> > face : quads) {
 				glBegin(GL_LINE_LOOP);
-					for (vector<int> point : face) {
-						glVertex3f(coords[point[0] - 1][0], coords[point[0] - 1][1], coords[point[0] - 1][2]);
+					for (vector<int> vertex : face) {
+						glVertex3f(coords[vertex[0] - 1][0], coords[vertex[0] - 1][1], coords[vertex[0] - 1][2]);
 					}
 				glEnd();
 			}
@@ -65,74 +53,84 @@ class figura3D {
 			glColor3f(1.0f,0.0f,0.0f);
 			for (vector<vector<int> > face : trng) {
 				glBegin(GL_LINE_LOOP);
-					for (vector<int> point : face) {
-						glVertex3f(coords[point[0] - 1][0], coords[point[0] - 1][1], coords[point[0] - 1][2]);
+					for (vector<int> vertex : face) {
+						glVertex3f(coords[vertex[0] - 1][0], coords[vertex[0] - 1][1], coords[vertex[0] - 1][2]);
 					}
 				glEnd();
 			}
-				// glVertex3f(coords[48][0], coords[48][1], coords[48][2]);
-				// glVertex3f(coords[50][0], coords[50][1], coords[50][2]);
-				// glVertex3f(coords[154][0], coords[154][1], coords[154][2]);
-				// glVertex3f(coords[153][0], coords[153][1], coords[153][2]);
-			
-		// 	glColor3f(1,0,0);
 
-		// 	if(t[0] > 0) {
-		// 		for (i = 7 ; i <= t[0] ;  i+=9) {
-		// 			glBegin(GL_LINE_LOOP);
-		// 				glVertex3f(c[(t[i - 6] * 3) - 2] , c[(t[i - 6] * 3) - 1] , c[t[i - 6] * 3]);
-		// 				glVertex3f(c[(t[i - 3] * 3) - 2] , c[(t[i - 3] * 3) - 1] , c[t[i - 3] * 3]);
-		// 				glVertex3f(c[(t[i] * 3) - 2] , c[(t[i] * 3) - 1] , c[t[i] * 3]);
-		// 			glEnd();
-		// 		}
-		// 	}
-			
-		// 	glColor3f(0,0,0);
-		// }
-
-		// void solid () {
-		// 	int i = 0;
-		// 	if(q[0] > 0) {
-		// 		for (i = 10 ; i <= q[0] ;  i+=12) {
-		// 			glBegin(GL_QUADS);
-		// 				glNormal3f(n[(q[i - 7] * 3) - 2] , n[(q[i - 7] * 3) - 1] , n[q[i - 7] * 3]) ; glVertex3f(c[(q[i - 9] * 3) - 2] , c[(q[i - 9] * 3) - 1] , c[q[i - 9] * 3]);
-		// 				glNormal3f(n[(q[i - 4] * 3) - 2] , n[(q[i - 4] * 3) - 1] , n[q[i - 4] * 3]) ; glVertex3f(c[(q[i - 6] * 3) - 2] , c[(q[i - 6] * 3) - 1] , c[q[i - 6] * 3]);
-		// 				glNormal3f(n[(q[i - 1] * 3) - 2] , n[(q[i - 1] * 3) - 1] , n[q[i - 1] * 3]) ; glVertex3f(c[(q[i - 3] * 3) - 2] , c[(q[i - 3] * 3) - 1] , c[q[i - 3] * 3]);
-		// 				glNormal3f(n[(q[i + 2] * 3) - 2] , n[(q[i + 2] * 3) - 1] , n[q[i + 2] * 3]) ; glVertex3f(c[(q[i] * 3) - 2] , c[(q[i] * 3) - 1] , c[q[i] * 3]);
-		// 			glEnd();
-		// 		}
-		// 	}
-
-		// 	if(t[0] > 0) {
-		// 		for (i = 7 ; i <= t[0] ;  i+=9) {
-		// 			glBegin(GL_TRIANGLES);
-		// 				glNormal3f(n[(t[i - 4] * 3) - 2] , n[(t[i - 4] * 3) - 1] , n[t[i - 4] * 3]) ; glVertex3f(c[(t[i - 6] * 3) - 2] , c[(t[i - 6] * 3) - 1] , c[t[i - 6] * 3]);
-		// 				glNormal3f(n[(t[i - 1] * 3) - 2] , n[(t[i - 1] * 3) - 1] , n[t[i - 1] * 3]) ; glVertex3f(c[(t[i - 3] * 3) - 2] , c[(t[i - 3] * 3) - 1] , c[t[i - 3] * 3]);
-		// 				glNormal3f(n[(t[i + 2] * 3) - 2] , n[(t[i + 2] * 3) - 1] , n[t[i + 2] * 3]) ; glVertex3f(c[(t[i] * 3) - 2] , c[(t[i] * 3) - 1] , c[t[i] * 3]);
-		// 			glEnd();
-		// 		}
-		// 	}
-		// }
-
-
-		// void texturized() {
-		// 	int i = 0;
-		// 	if(q[0] > 0) {
-		// 			glBegin(GL_QUADS);
-		// 			for (i = 1 ; i <= q[0] ;  i+=3) {
-		// 				glTexCoord2f(x[(q[i + 1] * 2) - 1] , x[q[i + 1] * 2]) ; glNormal3f(n[(q[i + 2] * 3) - 2] , n[(q[i + 2] * 3) - 1] , n[q[i + 2] * 3]) ; glVertex3f(c[(q[i] * 3) - 2] , c[(q[i] * 3) - 1] , c[q[i] * 3]);
-		// 			}
-		// 			glEnd();
-		// 	}
-
-		// 	if(t[0] > 0) {
-		// 			glBegin(GL_TRIANGLES);
-		// 			for (i = 1 ; i <= t[0] ;  i+=3) {
-		// 				glTexCoord2f(x[(t[i + 1] * 2) - 1] , x[t[i + 1] * 2]) ; glNormal3f(n[(t[i + 2] * 3) - 2] , n[(t[i + 2] * 3) - 1] , n[t[i + 2] * 3]) ; glVertex3f(c[(t[i] * 3) - 2] , c[(t[i] * 3) - 1] , c[t[i] * 3]);
-		// 			}
-		// 			glEnd();
-				
-		// 	}
+			glColor3f(1.0f,1.0f,0.0f);
+			for (vector<vector<int> > face : poly) {
+				glBegin(GL_LINE_LOOP);
+					for (vector<int> vertex : face) {
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
 		}
 
-};
+		void solid() {
+			glColor3f(1.0f,1.0f,1.0f);
+			for (vector<vector<int> > face : quads) {
+				glBegin(GL_QUADS);
+					for (vector<int> vertex : face) {
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+
+			glColor3f(1.0f,0.0f,0.0f);
+			for (vector<vector<int> > face : trng) {
+				glBegin(GL_TRIANGLES);
+					for (vector<int> vertex : face) {
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+
+			glColor3f(1.0f,1.0f,0.0f);
+			for (vector<vector<int> > face : poly) {
+				glBegin(GL_POLYGON);
+					for (vector<int> vertex : face) {
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+		}
+
+		void texturized() {
+			for (vector<vector<int> > face : quads) {
+				glBegin(GL_QUADS);
+					for (vector<int> vertex : face) {
+						glTexCoord2f(text[vertex[TEXT] - 1][0], text[vertex[TEXT] - 1][1]);
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+
+			for (vector<vector<int> > face : trng) {
+				glBegin(GL_TRIANGLES);
+					for (vector<int> vertex : face) {
+						glTexCoord2f(text[vertex[TEXT] - 1][0], text[vertex[TEXT] - 1][1]);
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+
+			for (vector<vector<int> > face : poly) {
+				glBegin(GL_POLYGON);
+					for (vector<int> vertex : face) {
+						glTexCoord2f(text[vertex[TEXT] - 1][0], text[vertex[TEXT] - 1][1]);
+						glNormal3f(norms[vertex[NORM] - 1][0], norms[vertex[NORM] - 1][1], norms[vertex[NORM] - 1][2]);
+						glVertex3f(coords[vertex[GEOM] - 1][0], coords[vertex[GEOM] - 1][1], coords[vertex[GEOM] - 1][2]);
+					}
+				glEnd();
+			}
+		}
+	};

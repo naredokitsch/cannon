@@ -1,186 +1,178 @@
+//*************************************************//
+//*************************************************//
+//******************** Alumno: ********************//
+//************** NOÉ MARTÍNEZ NAREDO **************//
+//*************************************************//
+//*************************************************//
+
 #include "Main.h"
-#include "ball.cpp"
-#include "canhao.cpp"
+#include "figura3D.cpp"
+#include "barrel.cpp"
+#include "box.cpp"
+#include "wheels.cpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include <math.h>
 
-#include <vector>
+# define ESC 27
 
-#include "figura3D.cpp"
-#define E 2.71828
+float transZ = -5.0f;
+float transX = 0.0f;
+float transY = 0.0f;
+float angleX = 0.0f;
+float angleY = 0.0f;
+float angle = 0.0;
+int screenW = 0.0;
+int screenH = 0.0;
 
-using namespace std;
-
-
-float pos_camX = 0, pos_camY = 0, pos_camZ = -5;
-
-int eye_camX = 0, eye_camY = 0.0, eye_camZ = 0;
-
-void InitGL(GLvoid);
-void reshape(int width, int height);
-void display(void);
-void cannon(void);
-void keyboard(unsigned char key, int x, int y);
-void arrow_keys(int a_keys, int x, int y);
-
-float t = -1.85,
-	ballRotX = 0.0, ballRotY = 0.0,
-	rotation = 0.0,
-	posX = 0.0, posY = 0.0, posZ = 0.0,
-	startAnimation = 0;
 int width, height, nrChannels;
 
-int main(int argc, char** argv) {
-	glutInit(&argc, argv);                          // Inicializamos OpenGL
-	glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE);   // Display Mode (Clores RGB y alpha | Buffer Sencillo )
-	glutInitWindowSize(1500, 1000);                 // Tama�o de la Ventana
-	glutInitWindowPosition(0, 0);                   //Posicion de la Ventana
-	glutCreateWindow("Proyecto Extraordinario");    // Nombre de la Ventana
-	InitGL();                                       // Parametros iniciales de la aplicacion
-	glutDisplayFunc(display);                       //Indicamos a Glut funcion de dibujo
-	glutReshapeFunc(reshape);                       //Indicamos a Glut funcion en caso de cambio de tamano
-	glutKeyboardFunc(keyboard);                     //Indicamos a Glut funcion de manejo de teclado
-	glutSpecialFunc(arrow_keys);                    //Otras
-	glutMainLoop();//}
-	return 0;
-}
-void InitGL(GLvoid) {    // Inicializamos parametros
-	glClearColor(0.5f, 0.5f, 0.5f, 0.0f);			// Negro de fondo
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_COLOR_MATERIAL);
+GLfloat positionalLightPosition[]= {0.0f, 3.0f, 0.0f, 1.0f};			// Light Position
+GLfloat spotlightPosition[]= {0.0f, 0.0f, -5.0f, 1.0f};		// Light Position
+
+void InitGL (void) {  // Inicializamos parametros
+	glShadeModel(GL_SMOOTH);							// Habilitamos Smooth Shading
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);				// Negro de fondo
 	glClearDepth(1.0f);									// Configuramos Depth Buffer
 	glEnable(GL_DEPTH_TEST);							// Habilitamos Depth Testing
+
+	//Configuracion luz
+	glLightfv(GL_LIGHT0, GL_POSITION, positionalLightPosition);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spotlightPosition);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+
 	glDepthFunc(GL_LEQUAL);								// Tipo de Depth Testing a realizar
+	glEnable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glEnable(GL_AUTO_NORMAL);
-	glEnable(GL_NORMALIZE);
+
+	// unsigned int texture = 0;
+	// glBindTexture(GL_TEXTURE_2D, texture);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
-void display(void) {
+
+void display (void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Limiamos pantalla y Depth Buffer
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();	// Reinicializamos la actual matriz Modelview
+	//glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-	glTranslatef(pos_camX, pos_camY, pos_camZ);
-		glRotatef(eye_camX, 1.0, 0.0, 0.0);
-		glRotatef(eye_camY, 0.0, 1.0, 0.0);
-		glRotatef(eye_camZ, 0.0, 0.0, 1.0);
+	figura3D barrel = figura3D(coord_barrel, quads_barrel, trng_barrel, poly_barrel, normals_barrel, text_barrel);
+	figura3D box = figura3D(coord_box, quads_box, trng_box, poly_box, normals_box, text_box);
+	figura3D wheels = figura3D(coord_wheels, quads_wheels, trng_wheels, poly_wheels, normals_wheels, text_wheels);
 
+	//glEnable(GL_TEXTURE_2D);
+	// int i = 0;
+	// unsigned char* minecraftBlock = stbi_load("yellow.jpeg", &width, &height, &nrChannels, 0);
+	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, minecraftBlock);
+	// stbi_image_free(minecraftBlock);
 
-	// glTranslatef(0.0, -7.0, -20.0);
-	// glTranslatef(posX, posY, posZ);
-	// glRotatef(rotation, 0.0, 1.0, 0.0);
-	cannon();
-	glFlush();
+	glTranslatef(transX, transY, transZ);
+	glRotatef(angleY, 0.0, 1.0, 0.0);
+	glRotatef(angleX, 1.0, 0.0, 0.0);
+	glRotatef(angle, 0.0, 0.0, 1.0);
+		//Poner Código Aquí.
+		//glScalef(0.05, 0.05, 0.05);
+		box.solid();
+		wheels.solid();
+		glTranslatef(0.5, 0.0, 0.0);
+		glRotatef(30, 0.0, 0.0, 1.0);
+		barrel.solid();
+		
+  	//glDisable(GL_TEXTURE_2D);				
+	glutSwapBuffers();
+  // Swap The Buffers
 }
 
-void cannon() {
-	glEnable(GL_TEXTURE_2D);
-	int i = 0;
-	unsigned char* ballData = stbi_load("texturas/ballTexture.jpg", &width, &height, &nrChannels, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, ballData);
-	stbi_image_free(ballData);
-	figura3D balon = figura3D(coord_ball, quads_ball, trng_ball);
-	figura3D cannon = figura3D(coord_canhao, quads_canhao, trng_canhao);
+void reshape(int width, int height ) {  // Creamos funcion Reshape
+  if (height==0) {										// Prevenir division entre cero
+		height=1;
+	}
 
-	glPushMatrix();
-		glTranslatef(0.000000 , -3.590332 , 0.347820);
-		glPushMatrix();
-			cannon.mesh();	
-		glPopMatrix();
-	glPopMatrix();
+	glViewport(0,0,width,height);	
 
-	glDisable(GL_TEXTURE_2D);
-}
-
-void reshape(int width, int height) { // Creamos funcion Reshape
-	if (height == 0)									// Prevenir division entre cero
-		height = 1;
-	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);						// Seleccionamos Projection Matrix
 	glLoadIdentity();
-	glFrustum(-0.1, 0.1, -0.1, 0.1, 0.1, 170.0); //Tipo de vista
+
+	// Tipo de Vista
+	glFrustum (-0.1, 0.1,-0.1, 0.1, 0.1, 50.0);
+
 	glMatrixMode(GL_MODELVIEW);							// Seleccionamos Modelview Matrix
-	glLoadIdentity();
+	//glLoadIdentity();									
 }
-void keyboard ( unsigned char key, int x, int y )  {// Create Keyboard Function
 
-	switch ( key ) {
-		case 's':   //Movimientos de camara
-		case 'S':
-			pos_camZ += 3.0f;
-			//eye_camZ -= 0.5f;
-			break;
-
+void keyboard(unsigned char key, int x, int y) {// Create Keyboard Function
+	switch(key) {
 		case 'w':
 		case 'W':
-			pos_camZ -= 3.0f;
-			//eye_camZ += 0.5f;
+			transZ +=0.2f;
 			break;
-
-		case 'd':
-		case 'D':
-			pos_camX += 0.5f;
-			//eye_camX -= 0.5f;
+		case 's':
+		case 'S':
+			transZ -=0.2f;
 			break;
 		case 'a':
 		case 'A':
-			pos_camX -= 0.5f;
-			//eye_camX += 0.5f;
+			transX +=0.2f;
 			break;
-
-		case 'l':
-		case 'L':
-		pos_camY -= 0.5f;
-		//eye_camY -= 0.5f;
-		break;
-
-    	case 'o':
-		case 'O':
-		pos_camY += 0.5f;
-		break;
-
-		case 27:        // Cuando Esc es presionado...
-			exit ( 0 );   // Salimos del programa
+		case 'd':
+		case 'D':
+			transX -=0.2f;
+			break;
+		case ESC:
+			exit(0);
 			break;        
-		default:        // Cualquier otra
+		default:
 			break;
   }
 	glutPostRedisplay();
 }
 
-void arrow_keys ( int a_keys, int x, int y )  {// Funcion para manejo de teclas especiales (arrow keys)
-
-  switch ( a_keys ) {
+void arrow_keys(int a_keys, int x, int y) {// Funcion para manejo de teclas especiales (arrow keys)
+  switch (a_keys) {
 	case GLUT_KEY_PAGE_UP:
-		pos_camY -= 0.5f;
-		//eye_camY += 0.5f;
+		transY += 1.0;
 		break;
-
 	case GLUT_KEY_PAGE_DOWN:
-		pos_camY += 0.5f;
-		//eye_camY -= 0.5f;
+		transY -= 1.0;
 		break;
-
-    case GLUT_KEY_UP:     // Presionamos tecla ARRIBA...
-		eye_camX = (eye_camX-15) % 360;
+    case GLUT_KEY_UP:
+		angle +=2.0f;
 		break;
-
-    case GLUT_KEY_DOWN:               // Presionamos tecla ABAJO...
-		eye_camX = (eye_camX+15) % 360;
+    case GLUT_KEY_DOWN:
+		angle -=2.0f;
 		break;
-
 	case GLUT_KEY_LEFT:
-		eye_camY = (eye_camY-15) % 360;
+		angleY +=2.0f;
 		break;
-
 	case GLUT_KEY_RIGHT:
-		eye_camY = (eye_camY+15) % 360;
+		angleY -=2.0f;
 		break;
     default:
-      break;
+    	break;
   }
   glutPostRedisplay();
+}
+
+
+int main(int argc, char** argv) { // Main Function
+  glutInit            (&argc, argv); // Inicializamos OpenGL
+  glutInitDisplayMode (GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH); // Display Mode (Clores RGB y alpha | Buffer Doble )
+  screenW = glutGet(GLUT_SCREEN_WIDTH);
+  screenH = glutGet(GLUT_SCREEN_HEIGHT);
+  glutInitWindowSize  (screenH, screenH);	// Tamaño de la Ventana
+  glutInitWindowPosition (0, 0);	//Posicion de la Ventana
+  glutCreateWindow    ("Practica 5 20191"); // Nombre de la Ventana
+  printf("Resolution H: %i \n", screenW);
+  printf("Resolution V: %i \n", screenH);
+  InitGL ();						// Parametros iniciales de la aplicacion
+  glutDisplayFunc     ( display );  //Indicamos a Glut función de dibujo
+  glutReshapeFunc     ( reshape );	//Indicamos a Glut función en caso de cambio de tamano
+  glutKeyboardFunc    ( keyboard );	//Indicamos a Glut función de manejo de teclado
+  glutSpecialFunc     ( arrow_keys );	//Otras
+  glutMainLoop        ( );          // 
+
+  return 0;
 }
