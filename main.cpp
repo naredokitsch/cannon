@@ -16,7 +16,7 @@
 #define FOCUS 1
 #define OFFSET 2.5
 #define INITIAL_CANNON_BALL_X_POSITION 0.5
-#define MAX_CANNON_BALL_X_POSITION 12.6
+#define MAX_CANNON_BALL_X_POSITION 12.9
 #define PARABOLA_FACTOR 27
 
 float scenarioZ_Translation = -10.0f,
@@ -129,8 +129,11 @@ void makeGrass() {
 void cannonBallParabola() {
 	if (startAnimation && cannonBallPositionX < MAX_CANNON_BALL_X_POSITION) {
 		cannonBallPositionX += 0.2;
-		cannonBallPositionY = -((pow(cannonBallPositionX - 5, 2))/PARABOLA_FACTOR * FOCUS) + OFFSET;
+	} else {
+		cannonBallPositionX = INITIAL_CANNON_BALL_X_POSITION;
+		startAnimation = 0;
 	}
+	cannonBallPositionY = -((pow(cannonBallPositionX - 5, 2))/PARABOLA_FACTOR * FOCUS) + OFFSET;
 
 	glutPostRedisplay();
 }
@@ -169,7 +172,6 @@ void keyboard(unsigned char key, int x, int y) {
 			break;
 		case '2':
 			startAnimation = 1;
-			cannonBallPositionX = INITIAL_CANNON_BALL_X_POSITION;
 			break;
 
 		case '1':
